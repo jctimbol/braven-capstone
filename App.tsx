@@ -1,3 +1,5 @@
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useFonts } from "expo-font";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
@@ -8,11 +10,14 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import ProjectDetailScreen from "./screens/ProjectDetailScreen";
 
-const CREAM = "#F5F0E8";
+const CREAM = "#FFFAF5";
 const MINT = "#C7F6E8";
 const LAVENDER = "#FFD4F9";
 const YELLOW = "#FDD190";
+
+const Stack = createNativeStackNavigator();
 
 function ProgressDots({
   total,
@@ -36,7 +41,7 @@ function ProgressDots({
                 styles.dot,
                 i < filled
                   ? { backgroundColor: dotColor }
-                  : { borderWidth: 1.5, borderColor: dotColor, borderStyle: 'dotted', backgroundColor: 'transparent' },
+                  : { borderWidth: 1.5, borderColor: dotColor, borderStyle: "dotted", backgroundColor: "transparent" },
               ]}
             />
           </React.Fragment>
@@ -57,7 +62,7 @@ function ProjectCard({
   author,
   schedule,
   bgColor,
-  inactive,
+  onHelp,
 }: {
   title: string;
   description: string;
@@ -68,7 +73,7 @@ function ProjectCard({
   author?: string;
   schedule?: string;
   bgColor: string;
-  inactive?: boolean;
+  onHelp?: () => void;
 }) {
   return (
     <View style={[styles.card, { backgroundColor: bgColor }]}>
@@ -76,12 +81,10 @@ function ProjectCard({
       <Text style={styles.cardDescription}>{description}</Text>
       <ProgressDots total={dotsTotal} filled={dotsFilled} label={dotsLabel} dotColor={dotColor} />
       <View style={styles.cardDivider} />
-      {!inactive && author && (
+      {author && (
         <View style={styles.cardFooter}>
-          <Text style={styles.authorText}>
-            {author} • {schedule}
-          </Text>
-          <TouchableOpacity>
+          <Text style={styles.authorText}>{author} • {schedule}</Text>
+          <TouchableOpacity onPress={onHelp}>
             <Text style={[styles.helpText, { color: dotColor, textShadowColor: dotColor }]}>help →</Text>
           </TouchableOpacity>
         </View>
@@ -90,12 +93,10 @@ function ProjectCard({
   );
 }
 
-export default function App() {
-  const [fontsLoaded] = useFonts({
-    MicrosoftSansSerif: require("./assets/fonts/micross.ttf"),
-  });
-
-  if (!fontsLoaded) return null;
+function HomeScreen({ navigation }: any) {
+  const navigateToDetail = (params: object) => {
+    navigation.navigate("ProjectDetail", params);
+  };
 
   return (
     <View style={styles.container}>
@@ -129,6 +130,14 @@ export default function App() {
           author="@mario"
           schedule="sun & mon mornings"
           bgColor={MINT}
+          onHelp={() => navigateToDetail({
+            title: "a not evil robot",
+            description: "looking for ai engineers, but open to anyone curious!",
+            author: "@mario",
+            schedule: "sun & mon mornings",
+            bgColor: MINT,
+            dotColor: "#60A590",
+          })}
         />
 
         <ProjectCard
@@ -141,6 +150,14 @@ export default function App() {
           author="@amuel"
           schedule="tues & thurs evenings"
           bgColor={LAVENDER}
+          onHelp={() => navigateToDetail({
+            title: "an evil robot",
+            description: "working on computer vision; no experience required!",
+            author: "@amuel",
+            schedule: "tues & thurs evenings",
+            bgColor: LAVENDER,
+            dotColor: "#AA5D9C",
+          })}
         />
 
         <Text style={styles.sectionLabel}>pick up an inactive project</Text>
@@ -155,9 +172,34 @@ export default function App() {
           bgColor={YELLOW}
           author="@jay"
           schedule="fri nights"
+          onHelp={() => navigateToDetail({
+            title: "synthesizer from brain waves",
+            description: "i wanna make awesome beats with my brain (literally)",
+            author: "@jay",
+            schedule: "fri nights",
+            bgColor: YELLOW,
+            dotColor: "#C28427",
+          })}
         />
       </ScrollView>
     </View>
+  );
+}
+
+export default function App() {
+  const [fontsLoaded] = useFonts({
+    MicrosoftSansSerif: require("./assets/fonts/micross.ttf"),
+  });
+
+  if (!fontsLoaded) return null;
+
+  return (
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="ProjectDetail" component={ProjectDetailScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 
@@ -262,14 +304,6 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
   },
-  dotFilled: {
-    backgroundColor: "#444",
-  },
-  dotEmpty: {
-    backgroundColor: "transparent",
-    borderWidth: 1.5,
-    borderColor: "#888",
-  },
   dotLine: {
     width: 14,
     height: 1.5,
@@ -282,7 +316,7 @@ const styles = StyleSheet.create({
   },
   cardDivider: {
     height: 1,
-    backgroundColor: '#00000022',
+    backgroundColor: "#00000022",
     marginHorizontal: 4,
     marginBottom: 10,
   },
